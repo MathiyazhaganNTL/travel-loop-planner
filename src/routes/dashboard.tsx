@@ -5,6 +5,10 @@ import { Button } from "@/components/ui/button";
 import {
   MapPin, Plane, Wallet, Calendar, Plus, Sparkles, TrendingUp, ArrowRight,
 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { ref, onValue } from "firebase/database";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth, db } from "@/lib/firebase";
 
 export const Route = createFileRoute("/dashboard")({
   head: () => ({
@@ -16,18 +20,13 @@ export const Route = createFileRoute("/dashboard")({
   component: Dashboard,
 });
 
-const trips = [
-  { name: "Bali Getaway", dates: "Jun 12 – Jun 19", progress: 60, status: "Upcoming" },
-  { name: "Kyoto Spring", dates: "Sep 04 – Sep 12", progress: 25, status: "Planning" },
-];
-
 const activity = [
   { text: "Added day 3 itinerary to Bali Getaway", time: "2h ago" },
   { text: "Updated budget for Kyoto Spring", time: "1d ago" },
   { text: "Booked airport taxi in Bali", time: "3d ago" },
 ];
 
-function StatCard({ icon: Icon, label, value, sub }: { icon: any; label: string; value: string; sub: string }) {
+function StatCard({ icon: Icon, label, value, sub }: { icon: any; label: string; value: string | number; sub: string }) {
   return (
     <Card className="p-5">
       <div className="flex items-center justify-between">
@@ -44,6 +43,39 @@ function StatCard({ icon: Icon, label, value, sub }: { icon: any; label: string;
 }
 
 function Dashboard() {
+  const [realTrips, setRealTrips] = useState<any[]>([]);
+  const [totalBudget, setTotalBudget] = useState(0);
+
+  useEffect(() => {
+    const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        const tripsRef = ref(db, `trips/${user.uid}`);
+        const unsubscribeDb = onValue(tripsRef, (snapshot) => {
+          const data = snapshot.val();
+          if (data) {
+            const parsedTrips = Object.keys(data).map(key => ({
+              id: key,
+              ...data[key]
+            })).reverse(); // show newest first
+            setRealTrips(parsedTrips);
+            
+            // Calculate total budget across all trips
+            const sum = parsedTrips.reduce((acc, t) => acc + (Number(t.budget) || 0), 0);
+            setTotalBudget(sum);
+          } else {
+            setRealTrips([]);
+            setTotalBudget(0);
+          }
+        });
+        return () => unsubscribeDb();
+      } else {
+        setRealTrips([]);
+        setTotalBudget(0);
+      }
+    });
+    return () => unsubscribeAuth();
+  }, []);
+
   return (
     <Layout>
       <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10">
@@ -63,10 +95,10 @@ function Dashboard() {
         </div>
 
         <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <StatCard icon={Plane} label="Upcoming trips" value="2" sub="Next in 18 days" />
-          <StatCard icon={MapPin} label="Cities planned" value="7" sub="Across 2 trips" />
-          <StatCard icon={Wallet} label="Total budget" value="$3,420" sub="$640 spent" />
-          <StatCard icon={Calendar} label="Days planned" value="14" sub="This year" />
+          <StatCard icon={Plane} label="Upcoming trips" value={realTrips.length} sub="Planned itineraries" />
+          <StatCard icon={MapPin} label="Cities planned" value={realTrips.length} sub={`Across ${realTrips.length} trips`} />
+          <StatCard icon={Wallet} label="Total budget" value={`$${totalBudget}`} sub="Across all trips" />
+          <StatCard icon={Calendar} label="Days planned" value={realTrips.reduce((acc, t) => acc + (t.days || 0), 0)} sub="This year" />
         </div>
 
         <div className="mt-6 grid gap-5 lg:grid-cols-3">
@@ -79,19 +111,22 @@ function Dashboard() {
                 </Button>
               </div>
               <div className="mt-4 space-y-3">
-                {trips.map((t) => (
-                  <div key={t.name} className="rounded-xl border border-border p-4">
+                {realTrips.length === 0 && (
+                  <p className="text-sm text-muted-foreground py-4">No trips planned yet. Create your first itinerary using the AI Planner!</p>
+                )}
+                {realTrips.slice(0, 3).map((t) => (
+                  <div key={t.id} className="rounded-xl border border-border p-4">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="font-semibold">{t.name}</p>
-                        <p className="text-xs text-muted-foreground">{t.dates}</p>
+                        <p className="font-semibold">{t.destination}</p>
+                        <p className="text-xs text-muted-foreground">{t.days} Days Itinerary • Budget: ${t.budget}</p>
                       </div>
-                      <span className="rounded-full bg-mint-soft px-2 py-0.5 text-[11px] font-medium text-mint">{t.status}</span>
+                      <span className="rounded-full bg-mint-soft px-2 py-0.5 text-[11px] font-medium text-mint">Planned</span>
                     </div>
                     <div className="mt-3 h-2 overflow-hidden rounded-full bg-secondary">
-                      <div className="h-full rounded-full bg-gradient-brand" style={{ width: `${t.progress}%` }} />
+                      <div className="h-full rounded-full bg-gradient-brand" style={{ width: `100%` }} />
                     </div>
-                    <p className="mt-1.5 text-[11px] text-muted-foreground">{t.progress}% planned</p>
+                    <p className="mt-1.5 text-[11px] text-muted-foreground">100% planned</p>
                   </div>
                 ))}
               </div>
@@ -101,16 +136,16 @@ function Dashboard() {
               <h2 className="text-lg font-semibold">Budget summary</h2>
               <div className="mt-4 grid grid-cols-4 gap-3 text-center text-xs">
                 {[
-                  { label: "Stay", value: 1450, color: "bg-primary" },
-                  { label: "Transport", value: 820, color: "bg-mint" },
-                  { label: "Food", value: 640, color: "bg-primary/70" },
-                  { label: "Activities", value: 510, color: "bg-mint/70" },
+                  { label: "Stay", value: Math.round(totalBudget * 0.45), color: "bg-primary" },
+                  { label: "Transport", value: Math.round(totalBudget * 0.20), color: "bg-mint" },
+                  { label: "Food", value: Math.round(totalBudget * 0.20), color: "bg-primary/70" },
+                  { label: "Activities", value: Math.round(totalBudget * 0.15), color: "bg-mint/70" },
                 ].map((b) => (
                   <div key={b.label} className="rounded-xl bg-muted p-3">
                     <p className="text-muted-foreground">{b.label}</p>
                     <p className="mt-1 text-base font-bold">${b.value}</p>
                     <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-background">
-                      <div className={`h-full ${b.color}`} style={{ width: `${(b.value / 1500) * 100}%` }} />
+                      <div className={`h-full ${b.color}`} style={{ width: totalBudget > 0 ? `${(b.value / totalBudget) * 100}%` : '0%' }} />
                     </div>
                   </div>
                 ))}

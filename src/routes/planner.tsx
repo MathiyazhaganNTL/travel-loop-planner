@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Sparkles, MapPin, Calendar, Wallet, Plane, Loader2 } from "lucide-react";
-import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { ref, push, serverTimestamp } from "firebase/database";
 import { auth, db } from "@/lib/firebase";
 import { toast } from "sonner";
 
@@ -55,8 +55,7 @@ function Planner() {
 
     try {
       if (auth.currentUser) {
-        await addDoc(collection(db, "trips"), {
-          userId: auth.currentUser.uid,
+        await push(ref(db, `trips/${auth.currentUser.uid}`), {
           destination,
           days,
           budget,

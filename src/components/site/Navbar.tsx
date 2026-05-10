@@ -1,7 +1,17 @@
-import { Link } from "@tanstack/react-router";
-import { Compass, Menu, X } from "lucide-react";
-import { useState } from "react";
+import { Link, useNavigate } from "@tanstack/react-router";
+import { Compass, Menu, X, User as UserIcon, LogOut } from "lucide-react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { auth } from "@/lib/firebase";
+import { onAuthStateChanged, signOut, User } from "firebase/auth";
 
 const links = [
   { to: "/", label: "Home" },
@@ -12,6 +22,22 @@ const links = [
 
 export function Navbar() {
   const [open, setOpen] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  const handleLogout = async () => {
+    await signOut(auth);
+    setOpen(false);
+    navigate({ to: "/" });
+  };
+
   return (
     <header className="sticky top-0 z-40 w-full border-b border-border/60 bg-background/80 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
@@ -35,12 +61,41 @@ export function Navbar() {
           ))}
         </nav>
         <div className="hidden items-center gap-2 md:flex">
-          <Button asChild variant="ghost" size="sm">
-            <Link to="/login">Log in</Link>
-          </Button>
-          <Button asChild size="sm">
-            <Link to="/signup">Get started</Link>
-          </Button>
+          {user ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="gap-2">
+                  <UserIcon className="h-4 w-4" />
+                  {user.displayName || "Account"}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuLabel>
+                  <div className="flex flex-col space-y-1">
+                    <p className="text-sm font-medium leading-none">{user.displayName || "Traveler"}</p>
+                    <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
+                  </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <Link to="/dashboard" className="w-full cursor-pointer">Dashboard</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-red-600 focus:text-red-600">
+                  <LogOut className="mr-2 h-4 w-4" />
+                  <span>Log out</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <>
+              <Button asChild variant="ghost" size="sm">
+                <Link to="/login">Log in</Link>
+              </Button>
+              <Button asChild size="sm">
+                <Link to="/signup">Get started</Link>
+              </Button>
+            </>
+          )}
         </div>
         <button
           className="md:hidden p-2 rounded-md hover:bg-secondary"
@@ -63,14 +118,26 @@ export function Navbar() {
                 {l.label}
               </Link>
             ))}
-            <div className="flex gap-2 pt-2">
-              <Button asChild variant="outline" size="sm" className="flex-1">
-                <Link to="/login">Log in</Link>
-              </Button>
-              <Button asChild size="sm" className="flex-1">
-                <Link to="/signup">Get started</Link>
-              </Button>
-            </div>
+            {user ? (
+              <div className="flex flex-col gap-2 pt-2 mt-2 border-t border-border">
+                <div className="px-3 py-2 text-sm">
+                  <p className="font-medium">{user.displayName || "Traveler"}</p>
+                  <p className="text-xs text-muted-foreground">{user.email}</p>
+                </div>
+                <Button variant="outline" onClick={handleLogout} className="justify-start text-red-600">
+                  <LogOut className="mr-2 h-4 w-4" /> Log out
+                </Button>
+              </div>
+            ) : (
+              <div className="flex gap-2 pt-2 mt-2 border-t border-border">
+                <Button asChild variant="outline" size="sm" className="flex-1">
+                  <Link to="/login" onClick={() => setOpen(false)}>Log in</Link>
+                </Button>
+                <Button asChild size="sm" className="flex-1">
+                  <Link to="/signup" onClick={() => setOpen(false)}>Get started</Link>
+                </Button>
+              </div>
+            )}
           </div>
         </div>
       )}
