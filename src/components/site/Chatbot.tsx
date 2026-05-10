@@ -45,7 +45,7 @@ export function Chatbot() {
     const systemPrompt = `You are Loop, the AI travel assistant for the Traveloop website. Traveloop helps users plan smarter trips, discover destinations, build day-by-day itineraries, manage budgets, and track their routes on a live map. The current user interacting with you is ${user ? user.displayName || user.email : "a guest user"}. Use your comprehensive knowledge to answer their travel-related questions, suggest itineraries, and guide them through the Traveloop platform features in a professional and neat manner.`;
 
     try {
-      const response = await fetch("http://localhost:11434/api/chat", {
+      const response = await fetch("/api/chat", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"

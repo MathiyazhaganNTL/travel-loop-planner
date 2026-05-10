@@ -12,4 +12,14 @@ export default defineConfig({
   tanstackStart: {
     server: { entry: "server" },
   },
+  vite: {
+    server: {
+      proxy: {
+        '/api/chat': {
+          target: 'http://127.0.0.1:11434',
+          changeOrigin: true
+        }
+      }
+    }
+  }
 });
