@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { Compass, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -8,6 +8,7 @@ import { useState } from "react";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { toast } from "sonner";
+import logo from "@/assets/logo4.png";
 
 export const Route = createFileRoute("/signup")({
   head: () => ({ meta: [{ title: "Sign up — Traveloop" }] }),
@@ -43,11 +44,8 @@ function Signup() {
   return (
     <div className="min-h-screen bg-gradient-hero flex items-center justify-center px-4 py-10">
       <div className="w-full max-w-md">
-        <Link to="/" className="flex items-center justify-center gap-2 mb-6">
-          <span className="grid h-10 w-10 place-items-center rounded-xl bg-gradient-brand text-brand-foreground">
-            <Compass className="h-5 w-5" />
-          </span>
-          <span className="font-display text-xl font-bold">Traveloop</span>
+        <Link to="/" className="flex items-center justify-center mb-6 transition-opacity hover:opacity-90">
+          <img src={logo} alt="Traveloop Logo" className="h-16 w-auto object-contain drop-shadow-sm" />
         </Link>
         <Card className="p-7">
           <h1 className="text-xl font-bold">Create your account</h1>

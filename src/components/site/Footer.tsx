@@ -1,16 +1,14 @@
 import { Compass } from "lucide-react";
 import { Link } from "@tanstack/react-router";
+import logo from "@/assets/logo4.png";
 
 export function Footer() {
   return (
     <footer className="border-t border-border bg-muted/40">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12 grid gap-10 md:grid-cols-4">
         <div className="md:col-span-2">
-          <Link to="/" className="flex items-center gap-2">
-            <span className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-brand text-brand-foreground">
-              <Compass className="h-5 w-5" />
-            </span>
-            <span className="font-display text-lg font-bold">Traveloop</span>
+          <Link to="/" className="flex items-center transition-opacity hover:opacity-90">
+            <img src={logo} alt="Traveloop Logo" className="h-12 w-auto object-contain drop-shadow-sm" />
           </Link>
           <p className="mt-3 max-w-sm text-sm text-muted-foreground">
             AI-powered travel planning. Discover destinations, build itineraries, manage budgets, and travel smarter.

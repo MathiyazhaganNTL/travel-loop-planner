@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { auth } from "@/lib/firebase";
 import { onAuthStateChanged, signOut, User } from "firebase/auth";
+import logo from "@/assets/logo4.png";
 
 const links = [
   { to: "/", label: "Home" },
@@ -41,11 +42,8 @@ export function Navbar() {
   return (
     <header className="sticky top-0 z-40 w-full border-b border-border/60 bg-background/80 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        <Link to="/" className="flex items-center gap-2">
-          <span className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-brand text-brand-foreground shadow-soft">
-            <Compass className="h-5 w-5" />
-          </span>
-          <span className="font-display text-lg font-bold tracking-tight">Traveloop</span>
+        <Link to="/" className="flex items-center transition-opacity hover:opacity-90">
+          <img src={logo} alt="Traveloop Logo" className="h-12 w-auto object-contain drop-shadow-sm" />
         </Link>
         <nav className="hidden items-center gap-1 md:flex">
           {links.map((l) => (
