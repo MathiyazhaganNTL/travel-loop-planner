@@ -51,7 +51,7 @@ export function Chatbot() {
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          model: "minimax-m2.5:cloud",
+          model: "llama3.2:3b",
           messages: [
             {
               role: "system",
@@ -83,7 +83,7 @@ export function Chatbot() {
         ...m,
         {
           role: "bot",
-          text: "I am having trouble connecting to my local brain (Ollama). Please make sure the Ollama server is running with the 'minimax-m2.5:cloud' model.",
+          text: "I am having trouble connecting to my local brain (Ollama). Please make sure the Ollama server is running with the 'llama3.2:3b' model.",
         },
       ]);
     } finally {
@@ -106,7 +106,7 @@ export function Chatbot() {
             <Sparkles className="h-4 w-4" />
             <div>
               <p className="text-sm font-semibold">Loop AI Assistant</p>
-              <p className="text-[11px] opacity-80">Powered by minimax-m2.5:cloud</p>
+              <p className="text-[11px] opacity-80">Powered by llama3.2:3b</p>
             </div>
           </div>
           <div className="flex-1 space-y-3 overflow-y-auto p-4">
