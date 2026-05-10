@@ -15,9 +15,10 @@ export default defineConfig({
   vite: {
     server: {
       proxy: {
-        '/api/chat': {
+        '/ollama-api': {
           target: 'http://127.0.0.1:11434',
-          changeOrigin: true
+          changeOrigin: true,
+          rewrite: (path) => path.replace(/^\/ollama-api/, '')
         }
       }
     }

@@ -45,45 +45,50 @@ export function Chatbot() {
     const systemPrompt = `You are Loop, the AI travel assistant for the Traveloop website. Traveloop helps users plan smarter trips, discover destinations, build day-by-day itineraries, manage budgets, and track their routes on a live map. The current user interacting with you is ${user ? user.displayName || user.email : "a guest user"}. Use your comprehensive knowledge to answer their travel-related questions, suggest itineraries, and guide them through the Traveloop platform features in a professional and neat manner.`;
 
     try {
-      const response = await fetch("/api/chat", {
+      const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+      if (!apiKey) {
+        throw new Error("Gemini API key is missing. Please check your .env file.");
+      }
+
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          model: "llama3.2:3b",
-          messages: [
-            {
-              role: "system",
-              content: systemPrompt
-            },
-            ...newMessages.map((m) => ({
-              role: m.role === "bot" ? "assistant" : "user",
-              content: m.text
-            }))
-          ],
-          stream: false
+          systemInstruction: {
+            parts: [{ text: systemPrompt }]
+          },
+          contents: newMessages
+            .filter((m, i) => !(i === 0 && m.role === "bot"))
+            .map((m) => ({
+            role: m.role === "bot" ? "model" : "user",
+            parts: [{ text: m.text }]
+          }))
         })
       });
 
       if (!response.ok) {
-        throw new Error("Failed to communicate with Ollama");
+        throw new Error("Failed to communicate with Gemini API");
       }
 
       const data = await response.json();
+      const botReply = data.candidates?.[0]?.content?.parts?.[0]?.text || "Sorry, I couldn't generate a response.";
+      
       setMessages((m) => [
         ...m,
         {
           role: "bot",
-          text: data.message.content,
+          text: botReply,
         },
       ]);
-    } catch (error) {
+    } catch (error: any) {
+      console.error("Chat API Error:", error);
       setMessages((m) => [
         ...m,
         {
           role: "bot",
-          text: "I am having trouble connecting to my local brain (Ollama). Please make sure the Ollama server is running with the 'llama3.2:3b' model.",
+          text: `I am having trouble connecting to the Gemini API: ${error.message}`,
         },
       ]);
     } finally {
@@ -106,7 +111,7 @@ export function Chatbot() {
             <Sparkles className="h-4 w-4" />
             <div>
               <p className="text-sm font-semibold">Loop AI Assistant</p>
-              <p className="text-[11px] opacity-80">Powered by llama3.2:3b</p>
+              <p className="text-[11px] opacity-80">Powered by Gemini AI</p>
             </div>
           </div>
           <div className="flex-1 space-y-3 overflow-y-auto p-4">
