@@ -22,10 +22,20 @@ export const Route = createFileRoute("/planner")({
 
 type Day = { day: number; title: string; activities: string[] };
 
+/** Format a number in Indian number system (e.g. 1,00,000) */
+function formatINR(n: number): string {
+  const s = Math.round(n).toString();
+  if (s.length <= 3) return s;
+  const last3 = s.slice(-3);
+  const rest = s.slice(0, -3);
+  const formatted = rest.replace(/\B(?=(\d{2})+(?!\d))/g, ",");
+  return `${formatted},${last3}`;
+}
+
 function Planner() {
   const [destination, setDestination] = useState("Bali");
   const [days, setDays] = useState(5);
-  const [budget, setBudget] = useState(1200);
+  const [budget, setBudget] = useState(50000);
   const [interest, setInterest] = useState("Beaches, food, culture");
   const [loading, setLoading] = useState(false);
   const [plan, setPlan] = useState<Day[] | null>(null);
@@ -34,7 +44,7 @@ function Planner() {
     e.preventDefault();
     setLoading(true);
     setPlan(null);
-    
+
     // Simulate AI generation delay
     await new Promise((resolve) => setTimeout(resolve, 1100));
 
@@ -44,8 +54,8 @@ function Planner() {
         i === 0
           ? `Arrival in ${destination}`
           : i === days - 1
-          ? "Relax & Departure"
-          : ["Cultural day", "Nature & adventure", "Local food tour", "Hidden gems"][i % 4],
+            ? "Relax & Departure"
+            : ["Cultural day", "Nature & adventure", "Local food tour", "Hidden gems"][i % 4],
       activities: [
         "Morning: scenic walk + breakfast at a local cafe",
         "Afternoon: top-rated attraction + photo stops",
@@ -106,10 +116,10 @@ function Planner() {
                   </div>
                 </div>
                 <div>
-                  <Label htmlFor="budget">Budget (USD)</Label>
+                  <Label htmlFor="budget">Budget (₹)</Label>
                   <div className="relative mt-1.5">
                     <Wallet className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                    <Input id="budget" type="number" min={100} step={50} value={budget} onChange={(e) => setBudget(Number(e.target.value))} className="pl-9" />
+                    <Input id="budget" type="number" min={5000} step={1000} value={budget} onChange={(e) => setBudget(Number(e.target.value))} className="pl-9" />
                   </div>
                 </div>
               </div>
@@ -125,19 +135,19 @@ function Planner() {
 
             <div className="mt-6 rounded-xl border border-border bg-muted/40 p-4">
               <p className="text-xs text-muted-foreground">Estimated daily budget</p>
-              <p className="mt-1 text-2xl font-bold">${perDay}<span className="text-sm font-normal text-muted-foreground">/day</span></p>
+              <p className="mt-1 text-2xl font-bold">₹{formatINR(perDay)}<span className="text-sm font-normal text-muted-foreground">/day</span></p>
               <div className="mt-3 grid grid-cols-3 gap-2 text-center text-[11px]">
                 <div className="rounded-lg bg-background p-2">
                   <p className="text-muted-foreground">Stay</p>
-                  <p className="font-semibold">${Math.round(perDay * 0.45)}</p>
+                  <p className="font-semibold">₹{formatINR(Math.round(perDay * 0.45))}</p>
                 </div>
                 <div className="rounded-lg bg-background p-2">
                   <p className="text-muted-foreground">Food</p>
-                  <p className="font-semibold">${Math.round(perDay * 0.25)}</p>
+                  <p className="font-semibold">₹{formatINR(Math.round(perDay * 0.25))}</p>
                 </div>
                 <div className="rounded-lg bg-background p-2">
                   <p className="text-muted-foreground">Activities</p>
-                  <p className="font-semibold">${Math.round(perDay * 0.3)}</p>
+                  <p className="font-semibold">₹{formatINR(Math.round(perDay * 0.3))}</p>
                 </div>
               </div>
             </div>

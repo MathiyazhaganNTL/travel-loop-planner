@@ -35,11 +35,11 @@ const travel1Images = [t1_img1, t1_img2, t1_img3];
 const travel2Images = [t2_img1, t2_img2, t2_img3, t2_img4, t2_img5];
 
 const items = [
-  { name: "Bali, Indonesia", tag: "Tropical", price: "From $620", images: travel1Images, desc: "Rice terraces, beaches and rich culture." },
-  { name: "Dubai, UAE", tag: "Luxury", price: "From $1200", images: travel2Images, desc: "Fascinating skyline and shopping." },
-  { name: "Santorini, Greece", tag: "Coastal", price: "From $890", images: [santorini], desc: "Iconic white villages and sunsets." },
-  { name: "Kyoto, Japan", tag: "Cultural", price: "From $740", images: [kyoto], desc: "Temples, gardens and bamboo forests." },
-  { name: "Swiss Alps", tag: "Mountains", price: "From $980", images: [swiss], desc: "Alpine lakes and mountain hiking." },
+  { name: "Bali, Indonesia", tag: "Tropical", price: "From ₹51,000", images: travel1Images, desc: "Rice terraces, beaches and rich culture." },
+  { name: "Dubai, UAE", tag: "Luxury", price: "From ₹1,00,000", images: travel2Images, desc: "Fascinating skyline and shopping." },
+  { name: "Santorini, Greece", tag: "Coastal", price: "From ₹74,000", images: [santorini], desc: "Iconic white villages and sunsets." },
+  { name: "Kyoto, Japan", tag: "Cultural", price: "From ₹62,000", images: [kyoto], desc: "Temples, gardens and bamboo forests." },
+  { name: "Swiss Alps", tag: "Mountains", price: "From ₹82,000", images: [swiss], desc: "Alpine lakes and mountain hiking." },
 ];
 
 function ImageCarousel({ images }: { images: string[] }) {
