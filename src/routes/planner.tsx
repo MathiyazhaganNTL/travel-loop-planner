@@ -6,6 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Sparkles, MapPin, Calendar, Wallet, Plane, Loader2 } from "lucide-react";
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { auth, db } from "@/lib/firebase";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/planner")({
   head: () => ({
@@ -27,28 +30,49 @@ function Planner() {
   const [loading, setLoading] = useState(false);
   const [plan, setPlan] = useState<Day[] | null>(null);
 
-  const generate = (e: React.FormEvent) => {
+  const generate = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setPlan(null);
-    setTimeout(() => {
-      const sample: Day[] = Array.from({ length: days }).map((_, i) => ({
-        day: i + 1,
-        title:
-          i === 0
-            ? `Arrival in ${destination}`
-            : i === days - 1
-            ? "Relax & Departure"
-            : ["Cultural day", "Nature & adventure", "Local food tour", "Hidden gems"][i % 4],
-        activities: [
-          "Morning: scenic walk + breakfast at a local cafe",
-          "Afternoon: top-rated attraction + photo stops",
-          "Evening: recommended restaurant with local cuisine",
-        ],
-      }));
-      setPlan(sample);
-      setLoading(false);
-    }, 1100);
+    
+    // Simulate AI generation delay
+    await new Promise((resolve) => setTimeout(resolve, 1100));
+
+    const sample: Day[] = Array.from({ length: days }).map((_, i) => ({
+      day: i + 1,
+      title:
+        i === 0
+          ? `Arrival in ${destination}`
+          : i === days - 1
+          ? "Relax & Departure"
+          : ["Cultural day", "Nature & adventure", "Local food tour", "Hidden gems"][i % 4],
+      activities: [
+        "Morning: scenic walk + breakfast at a local cafe",
+        "Afternoon: top-rated attraction + photo stops",
+        "Evening: recommended restaurant with local cuisine",
+      ],
+    }));
+
+    try {
+      if (auth.currentUser) {
+        await addDoc(collection(db, "trips"), {
+          userId: auth.currentUser.uid,
+          destination,
+          days,
+          budget,
+          interest,
+          plan: sample,
+          createdAt: serverTimestamp()
+        });
+        toast.success("Trip saved to your account!");
+      }
+    } catch (error) {
+      console.error("Error saving trip to Firebase:", error);
+      toast.error("Failed to save trip. Are you logged in?");
+    }
+
+    setPlan(sample);
+    setLoading(false);
   };
 
   const perDay = Math.round(budget / days);
